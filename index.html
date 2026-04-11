@@ -611,9 +611,9 @@
           const { data, error } = await supabaseClient
             .from("mov")
             .select("*")
-            .order("data", { ascending: false })
-            .order("id", { ascending: false });
-
+            // 🔥 ordem cronológica correta
+            .order("data", { ascending: true })
+            .order("id", { ascending: true });
           if (error) {
             mostrarAviso("Erro ao carregar movimentações.");
             console.error("Erro carregar mov:", error);
@@ -1160,9 +1160,21 @@
           let saidas = 0;
           let saldo = 0;
 
-          let movOrdenado = [...mov].sort(
-            (a, b) => new Date(b.data) - new Date(a.data),
-          );
+          // 🔥 ORDENAÇÃO CORRETA (do mais antigo para o mais novo)
+          // 🔥 ORDENAÇÃO CORRETA (data + ordem de inserção)
+          let movOrdenado = [...mov]
+            .map((item, index) => ({
+              ...item,
+              _index: index, // mantém ordem original de inserção
+            }))
+            .sort((a, b) => {
+              // 1️⃣ ordena por data
+              let diff = new Date(a.data) - new Date(b.data);
+              if (diff !== 0) return diff;
+
+              // 2️⃣ desempate pela ordem de inserção
+              return a._index - b._index;
+            });
 
           let dataAnterior = "";
 
