@@ -288,7 +288,7 @@ window.addEventListener("load", function () {
         clearInterval(verificacao);
 
         window.location.replace(
-          `/SCFP/vendas.html?vendedor=${vendedorUrl || "direto"}`,
+          `/vendas.html?vendedor=${vendedorUrl || "direto"}`,
         );
       }
     }, 1000);
@@ -305,7 +305,7 @@ window.addEventListener("load", function () {
         clearInterval(timer);
         clearInterval(verificacao);
 
-        window.location.href = `/SCFP/obrigado.html?vendedor=${vendedorUrl || "direto"}`;
+        window.location.href = `/obrigado.html?vendedor=${vendedorUrl || "direto"}`;
       }
     }, 3000);
 
