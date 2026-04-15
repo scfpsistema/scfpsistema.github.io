@@ -1812,3 +1812,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .scrollPadrao {
   display: block;
 }
+
+/* 🔥 LIVRO CAIXA - SCROLL HORIZONTAL FORÇADO */
+#containerTabelaMov {
+  overflow-x: auto;
+}
+
+#containerTabelaMov table {
+  min-width: 1400px; /* força maior que tela */
+  width: max-content;
+}
