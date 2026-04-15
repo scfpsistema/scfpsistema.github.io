@@ -1822,3 +1822,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   min-width: 1400px; /* força maior que tela */
   width: max-content;
 }
+
+#containerTabelaMov table {
+  min-width: 1400px;
+  width: 1400px; /* 🔥 FORÇA FIXO, NÃO DEIXA ENCOLHER */
+}
