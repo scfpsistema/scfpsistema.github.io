@@ -607,29 +607,33 @@
         let editandoCategoriaIndex = null;
 
         async function carregarMovSupabase() {
-          const { data, error } = await supabaseClient
-            .from("mov")
-            .select("*")
-            // 🔥 ordem cronológica correta
-            .order("data", { ascending: true })
-            .order("id", { ascending: true });
-          if (error) {
-            mostrarAviso("Erro ao carregar movimentações.");
-            console.error("Erro carregar mov:", error);
-            return;
-          }
-          console.log("MOV OK:", data);
+  const { data, error } = await supabaseClient
+    .from("mov")
+    .select("*")
+    // 🔥 NOVA ORDEM (mais recente primeiro)
+    .order("data", { ascending: false })
+    .order("created_at", { ascending: false });
 
-          mov = (data || []).map((item) => ({
-            id: item.id,
-            data: item.data,
-            banco: item.banco,
-            descricao: item.descricao,
-            tipo: item.tipo,
-            valor: Number(item.valor) || 0,
-            obs: item.obs || "",
-          }));
-        }
+  if (error) {
+    mostrarAviso("Erro ao carregar movimentações.");
+    console.error("Erro carregar mov:", error);
+    return;
+  }
+
+  console.log("MOV OK:", data);
+
+  // 🔥 IMPORTANTE: agora incluindo created_at
+  mov = (data || []).map((item) => ({
+    id: item.id,
+    data: item.data,
+    banco: item.banco,
+    descricao: item.descricao,
+    tipo: item.tipo,
+    valor: Number(item.valor) || 0,
+    obs: item.obs || "",
+    created_at: item.created_at, // 🔥 ESSENCIAL
+  }));
+}
 
         async function excluirMovSupabase(id) {
           try {
@@ -1168,19 +1172,15 @@
 
           // 🔥 ORDENAÇÃO CORRETA (do mais antigo para o mais novo)
           // 🔥 ORDENAÇÃO CORRETA (data + ordem de inserção)
-          let movOrdenado = [...mov]
-            .map((item, index) => ({
-              ...item,
-              _index: index, // mantém ordem original de inserção
-            }))
-            .sort((a, b) => {
-              // 1️⃣ ordena por data
-              let diff = new Date(a.data) - new Date(b.data);
-              if (diff !== 0) return diff;
+          // 🔥 NOVA ORDENAÇÃO (tipo extrato bancário)
+let movOrdenado = [...mov].sort((a, b) => {
+  // 1️⃣ Data mais recente primeiro
+  let diffData = new Date(b.data) - new Date(a.data);
+  if (diffData !== 0) return diffData;
 
-              // 2️⃣ desempate pela ordem de inserção
-              return a._index - b._index;
-            });
+  // 2️⃣ Dentro da mesma data → mais recente primeiro
+  return new Date(b.created_at) - new Date(a.created_at);
+});
 
           let dataAnterior = "";
 
