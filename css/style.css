@@ -1832,3 +1832,20 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .container {
   overflow-x: visible !important;
 }
+
+/* container vertical */
+.scrollPadrao {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* 🔥 CONTROLE REAL DO SCROLL HORIZONTAL */
+.scrollHorizontal {
+  overflow-x: auto;
+}
+
+/* 🔥 FORÇA LARGURA */
+.scrollHorizontal table {
+  min-width: 1400px;
+  width: max-content;
+}
