@@ -1824,13 +1824,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 #containerTabelaMov table {
+  overflow-x: auto;
   min-width: 1400px;
   width: 1400px; /* 🔥 FORÇA FIXO, NÃO DEIXA ENCOLHER */
 }
 /* 🔥 LIBERA SCROLL HORIZONTAL REAL */
 .container {
   overflow-x: visible !important;
-}
-#containerTabelaMov {
-  overflow-x: auto;
 }
