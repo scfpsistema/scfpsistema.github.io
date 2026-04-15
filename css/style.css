@@ -1793,3 +1793,19 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 /* force update */
+
+/* =========================================
+   SCROLL HORIZONTAL PARA TABELAS (MOBILE)
+   ========================================= */
+
+/* container das tabelas */
+.scrollPadrao {
+  width: 100%;
+  overflow-x: auto; /* 🔥 ativa scroll horizontal */
+  -webkit-overflow-scrolling: touch; /* rolagem suave no celular */
+}
+
+/* força tabela a não quebrar layout */
+.scrollPadrao table {
+  min-width: 1200px; /* ajuste se quiser (1000, 1100...) */
+}
