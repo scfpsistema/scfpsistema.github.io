@@ -1827,3 +1827,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   min-width: 1400px;
   width: 1400px; /* 🔥 FORÇA FIXO, NÃO DEIXA ENCOLHER */
 }
+/* 🔥 LIBERA SCROLL HORIZONTAL REAL */
+.container {
+  overflow-x: visible !important;
+}
+#containerTabelaMov {
+  overflow-x: auto;
+}
