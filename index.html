@@ -1162,59 +1162,75 @@
         }
 
         function carregarMov() {
-          let contaFiltro =
-            document.getElementById("filtroContaMov")?.value || "";
-          tabelaMov.innerHTML = "";
+  let contaFiltro =
+    document.getElementById("filtroContaMov")?.value || "";
+  tabelaMov.innerHTML = "";
 
-          let entradas = 0;
-          let saidas = 0;
-          let saldo = 0;
+  let entradas = 0;
+  let saidas = 0;
+  let saldo = 0;
 
-          // 🔥 ORDENAÇÃO CORRETA (do mais antigo para o mais novo)
-          // 🔥 ORDENAÇÃO CORRETA (data + ordem de inserção)
-          // 🔥 NOVA ORDENAÇÃO (tipo extrato bancário)
-let movOrdenado = [...mov].sort((a, b) => {
-  // 1️⃣ Data mais recente primeiro
-  let diffData = new Date(b.data) - new Date(a.data);
-  if (diffData !== 0) return diffData;
+  // 🔥 NOVO: cálculo correto do saldo (cronológico real)
+  let saldoMap = new Map();
+  let saldoTemp = 0;
 
-  // 2️⃣ Dentro da mesma data → mais recente primeiro
-  return new Date(b.created_at) - new Date(a.created_at);
-});
+  let movCronologico = [...mov].sort((a, b) => {
+    let diffData = new Date(a.data) - new Date(b.data);
+    if (diffData !== 0) return diffData;
 
-          let dataAnterior = "";
+    return new Date(a.created_at) - new Date(b.created_at);
+  });
 
-          movOrdenado.forEach((m, i) => {
-            if (contaFiltro && m.banco !== contaFiltro) return;
+  movCronologico.forEach((m) => {
+    if (m.tipo === "Entrada") {
+      saldoTemp += m.valor;
+    } else {
+      saldoTemp -= m.valor;
+    }
 
-            let indexOriginal = mov.indexOf(m);
-            let dataMov = new Date(m.data);
+    saldoMap.set(m.id, saldoTemp);
+  });
 
-            if (filtroInicio && dataMov < new Date(filtroInicio)) return;
-            if (filtroFim && dataMov > new Date(filtroFim)) return;
+  // 🔥 NOVA ORDENAÇÃO VISUAL (extrato bancário)
+  let movOrdenado = [...mov].sort((a, b) => {
+    let diffData = new Date(b.data) - new Date(a.data);
+    if (diffData !== 0) return diffData;
 
-            /* CALCULAR RESUMO DO DIA */
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
 
-            if (m.data !== dataAnterior) {
-              let entradasDia = 0;
-              let saidasDia = 0;
+  let dataAnterior = "";
 
-              movOrdenado.forEach((x) => {
-                if (x.data === m.data) {
-                  if (x.tipo === "Entrada") {
-                    entradasDia += converterValor(x.valor);
-                  } else {
-                    saidasDia += converterValor(x.valor);
-                  }
-                }
-              });
+  movOrdenado.forEach((m, i) => {
+    if (contaFiltro && m.banco !== contaFiltro) return;
 
-              let resultadoDia = entradasDia - saidasDia;
+    let dataMov = new Date(m.data);
 
-              let classeResultado =
-                resultadoDia >= 0 ? "saldoPositivo" : "saldoNegativo";
+    if (filtroInicio && dataMov < new Date(filtroInicio)) return;
+    if (filtroFim && dataMov > new Date(filtroFim)) return;
 
-              tabelaMov.innerHTML += `
+    /* CALCULAR RESUMO DO DIA */
+
+    if (m.data !== dataAnterior) {
+      let entradasDia = 0;
+      let saidasDia = 0;
+
+      movOrdenado.forEach((x) => {
+        if (x.data === m.data) {
+          if (x.tipo === "Entrada") {
+            entradasDia += converterValor(x.valor);
+          } else {
+            saidasDia += converterValor(x.valor);
+          }
+        }
+      });
+
+      let resultadoDia = entradasDia - saidasDia;
+
+      let classeResultado =
+        resultadoDia >= 0 ? "saldoPositivo" : "saldoNegativo";
+
+      tabelaMov.innerHTML += `
 <tr class="linhaDataExtrato">
 
 <td colspan="5">
@@ -1233,66 +1249,69 @@ ${formatarMoeda(resultadoDia)}
 </tr>
 `;
 
-              dataAnterior = m.data;
-            }
+      dataAnterior = m.data;
+    }
 
-            let entrada = "";
-            let saida = "";
+    let entrada = "";
+    let saida = "";
 
-            if (m.tipo == "Entrada") {
-              saldo += m.valor;
+    if (m.tipo == "Entrada") {
+      saldo += m.valor;
 
-              entrada =
-                "<span class='valorEntrada'>" +
-                formatarMoeda(m.valor) +
-                "</span>";
+      entrada =
+        "<span class='valorEntrada'>" +
+        formatarMoeda(m.valor) +
+        "</span>";
 
-              entradas += m.valor;
-            } else {
-              saldo -= m.valor;
+      entradas += m.valor;
+    } else {
+      saldo -= m.valor;
 
-              saida =
-                "<span class='valorSaida'>" +
-                formatarMoeda(m.valor) +
-                "</span>";
+      saida =
+        "<span class='valorSaida'>" +
+        formatarMoeda(m.valor) +
+        "</span>";
 
-              saidas += converterValor(m.valor);
-            }
+      saidas += converterValor(m.valor);
+    }
 
-            tabelaMov.innerHTML += `
-      <tr>
-        <td>${formatarDataBR(m.data)}</td>
-        <td>${m.banco}</td>
-        <td class="colConta">${m.descricao}</td>
+    // 🔥 AQUI ESTÁ A CORREÇÃO REAL DO SALDO
+    let saldoLinha = saldoMap.get(m.id) || 0;
 
-        <td>${entrada}</td>
-        <td>${saida}</td>
+    tabelaMov.innerHTML += `
+  <tr>
+    <td>${formatarDataBR(m.data)}</td>
+    <td>${m.banco}</td>
+    <td class="colConta">${m.descricao}</td>
 
-        <td class="${saldo >= 0 ? "saldoPositivo" : "saldoNegativo"}">
-          ${formatarMoeda(saldo)}
-        </td>
+    <td>${entrada}</td>
+    <td>${saida}</td>
 
-        <td>${m.obs || ""}</td>
+    <td class="${saldoLinha >= 0 ? "saldoPositivo" : "saldoNegativo"}">
+      ${formatarMoeda(saldoLinha)}
+    </td>
 
-        <td class="acoesTabela">
-          <button class="btnEditar" onclick="editarMov(${m.id})">Editar</button>
-<button class="btnExcluir" onclick="excluirMov(${m.id})">Excluir</button>
-        </td>
+    <td>${m.obs || ""}</td>
 
-      </tr>
-    `;
-          });
+    <td class="acoesTabela">
+      <button class="btnEditar" onclick="editarMov(${m.id})">Editar</button>
+      <button class="btnExcluir" onclick="excluirMov(${m.id})">Excluir</button>
+    </td>
 
-          if (filtroInicio || filtroFim) {
-            document.getElementById("subtotalEntradas").innerText =
-              formatarMoeda(entradas);
+  </tr>
+`;
+  });
 
-            document.getElementById("subtotalSaidas").innerText =
-              formatarMoeda(saidas);
-          }
+  if (filtroInicio || filtroFim) {
+    document.getElementById("subtotalEntradas").innerText =
+      formatarMoeda(entradas);
 
-          calcularSaldo();
-        }
+    document.getElementById("subtotalSaidas").innerText =
+      formatarMoeda(saidas);
+  }
+
+  calcularSaldo();
+}
 
         function calcularSaldo() {
           let contaFiltro =
