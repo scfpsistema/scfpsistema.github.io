@@ -1807,5 +1807,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 /* força tabela a não quebrar layout */
 .scrollPadrao table {
-  min-width: 1200px; /* ajuste se quiser (1000, 1100...) */
+  min-width: 1500px; /* ajuste se quiser (1000, 1100...) */
+}
+.scrollPadrao {
+  display: block;
 }
